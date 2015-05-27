@@ -1,4 +1,5 @@
 hostMAC=fa:16:3e:97:2c:6f
+hostUname=#uname -r
 hostname=kaka
 hostIP=10.0.101.116
 GateWay=10.0.101.116
@@ -28,8 +29,8 @@ cp /usr/lib/syslinux/pxelinux.0 /var/lib/tftpboot
 #NOTE4: Newer distributions might require that you append ",rw" to the end of the "nfsroot=" specification, to prevent a race in the Upstart version of the statd and portmap scripts.
 
 echo "LABEL linux" > /var/lib/tftpboot/pxelinux.cfg/default 
-echo "KERNEL vmlinuz-2.6.15-23-686" >> /var/lib/tftpboot/pxelinux.cfg/default 
-echo "APPEND root=/dev/nfs initrd=initrd.img-2.6.15-23-686 nfsroot=${hostIP}:/nfsroot ip=dhcp rw" >>  /var/lib/tftpboot/pxelinux.cfg/default
+echo "KERNEL vmlinuz-${hostUname}" >> /var/lib/tftpboot/pxelinux.cfg/default 
+echo "APPEND root=/var/lib/nfs initrd=initrd.img-${hostUname} nfsroot=${hostIP}:/usr/local/nfsroot ip=dhcp rw" >>  /var/lib/tftpboot/pxelinux.cfg/default
 
 chmod -R 777 /var/lib/tftpboot
 
@@ -38,9 +39,11 @@ service tftpd-hpa restart
 service isc-dhcp-server restart
 
 mkdir /usr/local/nfsroot
-echo "/usr/local/nfsroot             127.0.0.1(rw,no_root_squash,async,insecure,no_subtree_check)" >> /etc/exports
-#echo "/usr/local/nfsroot ${hostIP}(rw,no_root_squash,async,insecure,no_subtree_check)" >> /etc/exports
+#echo "/usr/local/nfsroot             127.0.0.1(rw,no_root_squash,async,insecure,no_subtree_check)" >> /etc/exports
+echo "/usr/local/nfsroot ${hostIP}(rw,no_root_squash,async,insecure,no_subtree_check)" >> /etc/exports
 chmod -R 777 /usr/local/nfsroot
+chmod -R 777 /usr/local
+chmod -R 777 /usr
 exportfs -rv
 
 sed -i "/^BOOT=/cBOOT=nfs" /etc/initramfs-tools/initramfs.conf
@@ -50,9 +53,10 @@ mkinitramfs -o ~/initrd.img-`uname -r`
 
 #NOTE: If the client source installation you copied the files from should remain bootable and usable from local hard disk, restore the former BOOT=local and MODULES=most options you changed in /etc/initramfs-tools/initramfs.conf. Otherwise, the first time you update the kernel image on the originating installation, the initram will be built for network boot, giving you "can't open /tmp/net-eth0.conf" and "kernel panic". Skip this step if you no longer need the source client installation.
 
-mount -t nfs -o nolock ${hostIP}:/nfsroot /mnt
-cp -ax /. /mnt/.
-cp -ax /dev/. /mnt/dev/.
+mount -t nfs -o nolock ${hostIP}:/usr/local/nfsroot /mnt
+#cp -ax /. /mnt/.
+#cp -ax /dev/. /mnt/dev/.
+cp /home/ubuntu/ubuntu-14.04.2-server-amd64.iso /mnt/
 
 cp ~/vmlinuz-`uname -r` /var/lib/tftpboot/
 cp ~/initrd.img-`uname -r` /var/lib/tftpboot/
