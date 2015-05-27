@@ -1,4 +1,5 @@
 hostMAC=fa:16:3e:97:2c:6f
+hostname=kaka
 hostIP=10.0.101.116
 GateWay=10.0.101.116
 dns=10.0.101.116
@@ -37,7 +38,8 @@ service tftpd-hpa restart
 service isc-dhcp-server restart
 
 mkdir /usr/local/nfsroot
-echo "/usr/local/nfsroot             ${hostIP}(rw,no_root_squash,async,insecure)" >> /etc/exports
+echo "/usr/local/nfsroot             127.0.0.1(rw,no_root_squash,async,insecure,no_subtree_check)" >> /etc/exports
+#echo "/usr/local/nfsroot ${hostIP}(rw,no_root_squash,async,insecure,no_subtree_check)" >> /etc/exports
 chmod -R 777 /usr/local/nfsroot
 exportfs -rv
 
@@ -48,7 +50,7 @@ mkinitramfs -o ~/initrd.img-`uname -r`
 
 #NOTE: If the client source installation you copied the files from should remain bootable and usable from local hard disk, restore the former BOOT=local and MODULES=most options you changed in /etc/initramfs-tools/initramfs.conf. Otherwise, the first time you update the kernel image on the originating installation, the initram will be built for network boot, giving you "can't open /tmp/net-eth0.conf" and "kernel panic". Skip this step if you no longer need the source client installation.
 
-mount -t nfs -onolock ${hostIP}:/nfsroot /mnt
+mount -t nfs -o nolock ${hostIP}:/nfsroot /mnt
 cp -ax /. /mnt/.
 cp -ax /dev/. /mnt/dev/.
 
