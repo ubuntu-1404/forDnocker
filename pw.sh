@@ -1,3 +1,6 @@
+#setup_pipework
+#git clone https://github.com/jpetazzo/pipework
+
 containerName=test1
 containerIP=10.0.101.99
 gatewayIP=10.0.101.1
