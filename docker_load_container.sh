@@ -1,3 +1,6 @@
+#setup_docker
+#wget -qO- https://get.docker.com/ | sh
+
 #containerID=ubt1404
 containerID=724e1562a9af
 
