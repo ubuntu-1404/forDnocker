@@ -1,20 +1,21 @@
 #setup_docker
 #wget -qO- https://get.docker.com/ | sh
 
-#containerID=ubt1404
-containerID=724e1562a9af
+containerID=hadoop-namenode
+#containerID=724e1562a9af
+containerName=test1
+containerHostName=namenode
 
-#docker for port/memory/volume share
-
-#rm -rf $(pwd)/datafile
-#mkdir $(pwd)/datafile
-
-docker run -i -t -d \
--p 10.0.1.111:20005:20000 \
--p 10.0.1.111:20517:27017 \
--p 10.0.1.111:20522:22 \
--v /home/ubuntu:/home/ubuntu \
+docker run -itd --name ${containerName} \
+-p 10.0.101.115:20022:22 \
+-p 10.0.101.115:20000:50070 \
+-p 10.0.101.115:20001:8088 \
+-p 10.0.101.115:20002:19888 \
+-h ${containerHostName} \
 ${containerID} /usr/sbin/sshd -D
 #${containerID} /bin/bash
+
+#docker for port/memory/volume share
 #-m 2000m \
 #-v /home/ubuntu:/home/ubuntu \
+#-h hostname \
