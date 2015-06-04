@@ -1,3 +1,4 @@
+#-v===the volume which to be shared should exist two files.One is namenode ,another is datanode
 . /etc/profile
 HADOOP_HOME=/root/hadoop-2.6.0
 
