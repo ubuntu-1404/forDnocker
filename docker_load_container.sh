@@ -1,5 +1,7 @@
 #setup_docker
 #wget -qO- https://get.docker.com/ | sh
+#import export.tar
+#cat /home/export.tar | docker import - targit:latest
 
 containerID=hadoop-namenode
 #containerID=724e1562a9af
