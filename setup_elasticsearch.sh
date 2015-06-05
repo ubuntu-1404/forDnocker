@@ -20,15 +20,11 @@ echo "node.data: true" >>  ${ESAdd}/config/elasticsearch.yml
 echo "http.max_content_length: 100mb" >>  ${ESAdd}/config/elasticsearch.yml
 echo "gateway.expected_nodes: 5" >>  ${ESAdd}/config/elasticsearch.yml
 #sed -i "/^# network.bind_host/cnetwork.bind_host: ${SelIP}" ${ESAdd}/config/elasticsearch.yml
-#sed -i "/^#network.bind_host/cnetwork.bind_host: ${SelIP}" ${ESAdd}/config/elasticsearch.yml
 #sed -i "/^# network.publish_host/cnetwork.publish_host: ${SerIP}" ${ESAdd}/config/elasticsearch.yml
-#sed -i "/^#network.publish_host/cnetwork.publish_host: ${SerIP}" ${ESAdd}/config/elasticsearch.yml
 sed -i "/^# network.host/cnetwork.host: ${SerIP}" ${ESAdd}/config/elasticsearch.yml
 sed -i "/^#network.host/cnetwork.host: ${SerIP}" ${ESAdd}/config/elasticsearch.yml
 #sed -i "/^# transport.tcp.port/ctransport.tcp.port: 9300" ${ESAdd}/config/elasticsearch.yml
-#sed -i "/^#transport.tcp.port/ctransport.tcp.port: 9300" ${ESAdd}/config/elasticsearch.yml
 #sed -i "/^# http.port/chttp.port: 9200" ${ESAdd}/config/elasticsearch.yml
-#sed -i "/^#http.port/chttp.port: 9200" ${ESAdd}/config/elasticsearch.yml
 sed -i "/^# path.conf:/cpath.conf: ${dataAdd}/conf" ${ESAdd}/config/elasticsearch.yml
 sed -i "/^#path.conf:/cpath.conf: ${dataAdd}/conf" ${ESAdd}/config/elasticsearch.yml
 echo "path.data: ${dataAdd}/datafile" >> ${ESAdd}/config/elasticsearch.yml
@@ -46,6 +42,33 @@ sed -i "/^set.default.ES_HEAP_SIZE/cset.default.ES_HEAP_SIZE=${ES_HEAP_SIZE}" ${
 sed -i "/^set.default.JAVA_HOME/cset.default.JAVA_HOME=${JAVA_HOME}" ${ESAdd}/bin/service/elasticsearch.conf
 
 cp -R plugins/ ${ESAdd}/plugins/
+
+echo "* soft  memlock 16000000" >> /etc/security/limits.conf
+echo "* hard  memlock 16000000" >> /etc/security/limits.conf
+echo "* hard nofile 65535" >> /etc/security/limits.conf
+echo "* soft nofile 65535" >> /etc/security/limits.conf
+
+echo "index.cache.field.max_size: 500000" >> config/elasticsearch.yml
+echo "index.cache.field.expire: 10m" >> config/elasticsearch.yml
+echo "index.cache.field.type: soft" >> config/elasticsearch.yml
+echo "bootstrap.mlockall: true" >> config/elasticsearch.yml
+echo "index.translog.flush_threshold_ops: 500000" >> config/elasticsearch.yml
+echo "index.refresh_interval: -1" >> config/elasticsearch.yml
+echo "threadpool:" >> config/elasticsearch.yml
+echo "     get:" >> config/elasticsearch.yml
+echo "         type: fixed" >> config/elasticsearch.yml
+echo "         size: 20" >> config/elasticsearch.yml
+echo "         queue_size: 10000" >> config/elasticsearch.yml
+echo "threadpool:" >> config/elasticsearch.yml
+echo "     search:" >> config/elasticsearch.yml
+echo "         type: fixed" >> config/elasticsearch.yml
+echo "         size: 20" >> config/elasticsearch.yml
+echo "         queue_size: 10000" >> config/elasticsearch.yml
+echo "threadpool:" >> config/elasticsearch.yml
+echo "     index:" >> config/elasticsearch.yml
+echo "         type: fixed" >> config/elasticsearch.yml
+echo "         size: 30" >> config/elasticsearch.yml
+echo "         queue_size: 1000" >> config/elasticsearch.yml
 
 chmod 777 ${ESAdd}
 chmod 777 ${ESAdd}/bin/

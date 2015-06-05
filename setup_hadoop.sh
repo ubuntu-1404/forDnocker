@@ -14,7 +14,7 @@ node(){
 #if node() $1 then
 #fi
 
-echo "select service to be run--1:format your cluster;2:run up your namenode and resourcemanager service;3:run up your datanode and noderesource service"
+echo "select service to be run--1:format your cluster;2:run up your namenode and resourcemanager service;3:run up your datanode and noderesource service;4:update hosts"
 read tmp
 if [ ${tmp} -eq 1 ]; then
 ${HADOOP_HOMEl}/bin/hdfs namenode -format cluster-name
@@ -30,4 +30,10 @@ ${HADOOP_HOME}/sbin/hadoop-daemon.sh --config ${HADOOP_HOME}/etc/hadoop/ --scrip
 ${HADOOP_HOME}/sbin/hadoop-daemon.sh --config ${HADOOP_HOME}/etc/hadoop/ --script hdfs start datanode
 ${HADOOP_HOME}/sbin/yarn-daemon.sh --config ${HADOOP_HOME}/etc/hadoop/ stop nodemanager       
 ${HADOOP_HOME}/sbin/yarn-daemon.sh --config ${HADOOP_HOME}/etc/hadoop/ start nodemanager
+fi
+if [ ${tmp} -eq 4 ]; then
+echo "192.168.100.91	namenode" >> /etc/hosts
+echo "192.168.100.92	datenode1" >> /etc/hosts
+echo "192.168.100.93	datanode2" >> /etc/hosts
+echo "192.168.100.94	datanode3" >> /etc/hosts
 fi
