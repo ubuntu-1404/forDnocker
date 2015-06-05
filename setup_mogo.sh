@@ -1,13 +1,14 @@
 #setup mongodb
 name=testers
+logpath=/home/ubuntu/logs
+datapath=/home/ubuntu/datafile
+mongpath=/root/mongodb-linux-x86_64-ubuntu1404-3.0.3
+conf1=192.168.100.56:20000
+conf2=192.168.100.57:20000
+conf3=192.168.100.58:20000
 #IPAddress=10.0.1.136
-rm -rf /usr/mongodb-linux-x86_64-ubuntu1404-3.0.3
-tar -zxvf $(pwd)/mongodb-linux-x86_64-ubuntu1404-3.0.3.tgz -C /usr
-mongpath=/usr/mongodb-linux-x86_64-ubuntu1404-3.0.3
-echo "please put mongod type [1-dataSet/2-confSet/3-routSet/4-Replica/5-Sharding]"
+echo "please put mongod type [0-setupMongo/1-dataSet/2-confSet/3-routSet/4-Replica/5-Sharding]"
 read mongod_type
-rm -rf /usr/mongodbpath/log
-mkdir -p /usr/mongodbpath/log
 
 #echo "dbpath=$(pwd)/mongodbpath/data" >> $(pwd)/master.conf
 #echo "logpath=$(pwd)/mongodbpath/log" >> $(pwd)/master.conf
@@ -20,21 +21,17 @@ mkdir -p /usr/mongodbpath/log
 #echo "oplogSize=10000" >> $(pwd)/master.conf
 #echo "fork=true" >> $(pwd)/master.conf
 #echo "noprealloc=true" >> $(pwd)/master.conf
-
+if [ ${mongod_type} -eq 0 ]; then
+tar -zxvf $(pwd)/mongodb-linux-x86_64-ubuntu1404-3.0.3.tgz -C /root
+fi
 if [ ${mongod_type} -eq 1 ]; then
-rm -rf /usr/mongodbpath/data-share
-mkdir -p /usr/mongodbpath/data-share
-${mongpath}/bin/mongod -fork -dbpath /usr/mongodbpath/data-share -logpath /usr/mongodbpath/log/data.log -replSet ${name} 
+${mongpath}/bin/mongod -fork -dbpath ${datapath} -logpath ${logpath}/data.log -replSet ${name} 
 fi
-
 if [ ${mongod_type} -eq 2 ]; then
-rm -rf /usr/mongodbpath/data-confi
-mkdir -p /usr/mongodbpath/data-confi
-${mongpath}/bin/mongod -fork -configsvr -dbpath /usr/mongodbpath/data-confi -logpath /usr/mongodbpath/log/conf.log  -port 20000
+${mongpath}/bin/mongod -fork -configsvr -dbpath ${datapath} -logpath ${logpath}/conf.log  -port 20000
 fi
-
 if [ ${mongod_type} -eq 3 ]; then
-${mongpath}/bin/mongos -fork -logpath /usr/mongodbpath/log/root.log -configdb 10.0.1.111:20001,10.0.1.111:20002,10.0.1.111:20003 -port 27017
+${mongpath}/bin/mongos -fork -logpath ${logpath}/root.log -configdb ${conf1},${conf2},${conf3} -port 27017
 fi
 
 	#mongodb_connection
