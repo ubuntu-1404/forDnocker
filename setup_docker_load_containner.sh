@@ -10,34 +10,34 @@
 #########################################################
 
 ##############Parameters to be set up####################
-containerID=724e1562a9af				#
-containerName=test					#
-sharedpath=/home/ubuntu					#
-hostIP=192.168.100.113					#
-							#
-containerIP=192.168.100.99				#
-gatewayIP=192.168.100.1					#
-pipath=/home/pipework					#
-desbr=br0						#
-oldbr=eth0						#
+containerID=724e1562a9af
+containerName=test1
+sharedpath=/home/ubuntu/mysql
+hostIP=192.168.100.113
+containerIP=192.168.100.33
+gatewayIP=192.168.100.1
+pipath=/home/sam/pipework
+desbr=br0
+oldbr=eth0
 #########################################################
 echo "please choose container build mode--1:NAT;2:Bridge;3:SetupPipwork;"
-read net-type
-if [ ${net-type} -eq 1 ]; then
+read nettype
+if [ ${nettype} -eq 1 ]; then
 docker run -itd --name ${containerName} \
 -p ${hostIP}:20022:22 \
+-p ${hostIP}:20000:3306 \
 -h ${containerName} \
--v ${sharedpath}:/home/ubuntu \			
+-v ${sharedpath}:/home/ubuntu \
 ${containerID} /usr/sbin/sshd -D
 fi
-if [ ${net-type} -eq 2 ]; then
+if [ ${nettype} -eq 2 ]; then
 docker run -itd --name ${containerName} --net=none \
 -h ${containerName} \
--v ${sharedpath}:/home/ubuntu \			
+-v ${sharedpath}:/home/ubuntu \
 ${containerID} /usr/sbin/sshd -D
 ${pipath}/pipework ${desbr} ${containerName} ${containerIP}/24@${gatewayIP}
 fi
-if [ ${net-type} -eq 3 ]; then
+if [ ${nettype} -eq 3 ]; then
 apt-get install bridge-utils
 ip addr add ${hostIP}/24 dev ${desbr}; \
 ip addr del ${hostIP}/24 dev ${oldbr}; \
