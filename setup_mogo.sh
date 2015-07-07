@@ -1,3 +1,4 @@
+name=testers
 hname=$(hostname)
 logpath=/home/ubuntu/logs
 conf1=172.17.0.11:20000
@@ -5,6 +6,7 @@ conf2=172.17.0.21:20000
 conf3=172.17.0.31:20000
 datapath=/home/ubuntu/datafile
 mongpath=/root/mongodb-linux-x86_64-ubuntu1404-3.0.3
+export LC_ALL=C
 tar -zxvf /home/ubuntu/mongodb-linux-x86_64-ubuntu1404-3.0.3.tgz -C /root
 if [ ! -d ${logpath} ]; then
         mkdir ${logpath}
