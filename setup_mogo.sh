@@ -6,10 +6,10 @@ conf3=172.17.0.31:20000
 datapath=/home/ubuntu/datafile
 mongpath=/root/mongodb-linux-x86_64-ubuntu1404-3.0.3
 tar -zxvf /home/ubuntu/mongodb-linux-x86_64-ubuntu1404-3.0.3.tgz -C /root
-if [ ! -d ${logpath}]; then
+if [ ! -d ${logpath} ]; then
         mkdir ${logpath}
 fi
-if [ ! -d ${datapath}]; then
+if [ ! -d ${datapath} ]; then
         mkdir ${datapath}
 fi
 if [ "${hname}" = "mongodbrouter.wodezoon.com" ]; then
