@@ -26,3 +26,6 @@ fi
 #init.js==>
 #rs.reconfig({_id : "testers1",members:[{_id : 0, host : "172.17.0.29:27017",priority:2},{_id : 1, host : "172.17.0.30:27017",priority:1},{_id : 2, host : "172.17.0.31:27017", arbiterOnly:true}]})
 #init.js==>
+
+#config router
+#sh.addShard("testers/172.17.0.14:27017")
