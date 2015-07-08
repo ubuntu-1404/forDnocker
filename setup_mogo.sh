@@ -14,13 +14,13 @@ fi
 if [ ! -d ${datapath} ]; then
         mkdir ${datapath}
 fi
-if [ "${hname}" = "mongodbrouter.wodezoon.com" ]; then
+if [[ $(hostname) = mongodbrouter* ]]; then
         ${mongpath}/bin/mongos -fork -logpath ${logpath}/root.log -configdb ${conf1},${conf2},${conf3} -port 27017
 fi
-if [ "${hname}" = "mongodbconfiger.wodezoon.com" ]; then
+if [[ $(hostname) = mongodbconfiger* ]]; then
         ${mongpath}/bin/mongod -fork -configsvr -dbpath ${datapath} -logpath ${logpath}/conf.log -port 20000
 fi
-if [ "${hname}" = "mongodbsharer.wodezoon.com" ]; then
+if [[ $(hostname) = mongodbsharer* ]]; then
         ${mongpath}/bin/mongod -fork -dbpath ${datapath} -logpath ${logpath}/data.log -replSet ${name}
 fi
 #init.js==>
