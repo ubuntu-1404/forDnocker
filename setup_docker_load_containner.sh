@@ -10,10 +10,11 @@
 #########################################################
 
 ##############Parameters to be set up####################
-containerID=724e1562a9af
-containerName=test1
-sharedpath=/home/ubuntu/mysql
-hostIP=192.168.100.113
+index=216
+#containerID=724e1562a9af
+containerID=b4c88ba3e6f7
+sharedpath=/data/share${index}
+containerName=mongodbrouter${index}.wodezoon.com
 containerIP=192.168.100.33
 gatewayIP=192.168.100.1
 pipath=/home/sam/pipework
@@ -24,8 +25,11 @@ echo "please choose container build mode--1:NAT;2:Bridge;3:SetupPipwork;"
 read nettype
 if [ ${nettype} -eq 1 ]; then
 docker run -itd --name ${containerName} \
--p ${hostIP}:20022:22 \
--p ${hostIP}:20000:3306 \
+-p ${hostIP}:${index}22:22 \
+-p ${hostIP}:${index}17:27017 \
+-p ${hostIP}:${index}18:27018 \
+-p ${hostIP}:${index}80:8080 \
+-p ${hostIP}:${index}81:8081 \
 -h ${containerName} \
 -v ${sharedpath}:/home/ubuntu \
 ${containerID} /usr/sbin/sshd -D
