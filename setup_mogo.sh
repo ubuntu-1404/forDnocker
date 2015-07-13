@@ -1,4 +1,4 @@
-name=testers1
+delta=180
 logpath=/home/ubuntu/logs
 datapath=/home/ubuntu/datafile
 mongpath=/root/mongodb-linux-x86_64-ubuntu1404-3.0.3
@@ -20,35 +20,51 @@ if [ ! -d ${datapath}/bakup ]; then
         mkdir -p ${datapath}/bakup
 fi
 
+echo "$(hostname)" > ${mongpath}/host
+tmp=`tr -sc '[0-9]' ' ' < ${mongpath}/host`
 #init.js==>
-for ((i=0;i<3;i++));do
-        master=$[i*4+202]
-        slaver=$[i*4+203]
-        arbter=$[i*4+204]
-        echo "cfg={_id : \"testers1\",members:[{_id : 0, host : 'mongodbsharer${master}.wodezoon.com',priority:2},{_id : 1, host : 'mongodbsharer${slaver}.wodezoon.com',priority:1},{_id : 2, host : 'mongodbsharer${arbter}.wodezoon.com', arbiterOnly:true}]}"  > ${mongpath}/rs.initiate${master}.js
+for ((i=1;i<=3;i++));do
+        master=$[i*4+delta-2]
+        slaver=$[i*4+delta-1]
+        arbter=$[i*4+delta]
+        echo "cfg={_id : \"testers$i\",members:[{_id : 0, host : 'mongodbsharer${master}.wodezoon.com',priority:2},{_id : 1, host : 'mongodbsharer${slaver}.wodezoon.com',priority:1},{_id : 2, host : 'mongodbsharer${arbter}.wodezoon.com', arbiterOnly:true}]}"  > ${mongpath}/rs.initiate${master}.js
         echo "rs.initiate(cfg)" >> ${mongpath}/rs.initiate${master}.js
         echo "sh.addShard(\"testers$i/mongodbsharer${master}.wodezoon.com\")" >   ${mongpath}/sh.addShard$i.js
+        echo "exit" >> ${mongpath}/sh.addShard$i.js
 done
 #init.js==>
 
 if [[ $(hostname) = mongodbrouter* ]]; then
-        ${mongpath}/bin/mongos -fork -logpath ${logpath}/root.log -configdb mongodbsharer205.wodezoon.com,mongodbsharer209.wodezoon.com,mongodbsharer213.wodezoon.com  -port 27017
-        if [[ $(hostname) = mongodbrouter214* ]]; then
+        conf1=$[delta+5]
+        conf2=$[delta+9]
+        conf3=$[delta+13]
+        tmp1=$[delta+14]
+        ${mongpath}/bin/mongos -fork -logpath ${logpath}/root.log -configdb mongodbconfer${conf1}.wodezoon.com:27017,mongodbconfer${conf2}.wodezoon.com:27017,mongodbconfer${conf3}.wodezoon.com:27017  -port 27017
+        if [[ $(hostname) = mongodbrouter${tmp1}* ]]; then
                 for ((i=1;i<=3;i++)) ; do
-                        ${mongpath}/bin/mongo ${mongpath}/sh.addShard$i.js
+                        ${mongpath}/bin/mongo --shell ${mongpath}/sh.addShard$i.js
                 done
         fi
 fi
 if [[ $(hostname) = mongodbconfer* ]]; then
         ${mongpath}/bin/mongod -fork -configsvr -dbpath ${datapath} -logpath ${logpath}/conf.log -port 27017
-        echo "$(hostname)" > ${mongpath}/host
-        tmp=`tr -sc '[0-9]' ' ' < ${mongpath}/host`
         typeset tmp1=$((tmp-3))
-        echo "${mongpath}/bin/mongo mongodbsharer${tmp1}.wodezoon.com --shell ${mongpath}/rs.initiate${tmp1}.js"
         ${mongpath}/bin/mongo mongodbsharer${tmp1}.wodezoon.com --shell ${mongpath}/rs.initiate${tmp1}.js
 fi
 if [[ $(hostname) = mongodbsharer* ]]; then
-        ${mongpath}/bin/mongod -fork -dbpath ${datapath}/appdb -logpath ${logpath}/appdb/data.log -replSet ${name} -port 27017 --oplogSize 1024
+        tmp1=$[(tmp-2-delta)/4]
+        if [ ${tmp1} -eq 0 ]; then
+                echo "${mongpath}/bin/mongod -fork -dbpath ${datapath}/appdb -logpath ${logpath}/appdb/data.log -replSet testers1 -port 27017 --oplogSize 1024"
+                ${mongpath}/bin/mongod -fork -dbpath ${datapath}/appdb -logpath ${logpath}/appdb/data.log -replSet testers1 -port 27017 --oplogSize 1024
+        fi
+        if [ ${tmp1} -eq 1 ]; then
+                echo "${mongpath}/bin/mongod -fork -dbpath ${datapath}/appdb -logpath ${logpath}/appdb/data.log -replSet testers2 -port 27017 --oplogSize 1024"
+                ${mongpath}/bin/mongod -fork -dbpath ${datapath}/appdb -logpath ${logpath}/appdb/data.log -replSet testers2 -port 27017 --oplogSize 1024
+        fi
+        if [ ${tmp1} -eq 2 ]; then
+                echo "${mongpath}/bin/mongod -fork -dbpath ${datapath}/appdb -logpath ${logpath}/appdb/data.log -replSet testers3 -port 27017 --oplogSize 1024"
+                ${mongpath}/bin/mongod -fork -dbpath ${datapath}/appdb -logpath ${logpath}/appdb/data.log -replSet testers3 -port 27017 --oplogSize 1024
+        fi
 #        ${mongpath}/bin/mongod -fork -dbpath ${datapath}/bakup -logpath ${logpath}/bakup/data.log -replSet ${name} -port 27018
 #        if [[ $(hostname) = mongodbsharer201* ]]; then
 #                if [ ! -f ${mmspath} ]; then
