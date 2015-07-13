@@ -15,6 +15,7 @@ index=216
 containerID=b4c88ba3e6f7
 sharedpath=/data/share${index}
 containerName=mongodbrouter${index}.wodezoon.com
+hostIp=192.168.102.249
 containerIP=192.168.100.33
 gatewayIP=192.168.100.1
 pipath=/home/sam/pipework
