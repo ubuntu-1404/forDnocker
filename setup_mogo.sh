@@ -1,21 +1,5 @@
 name=testers1
 logpath=/home/ubuntu/logs
-dbhost1=mongodb.wodezoon.com:20117
-dbhost2=mongodb.wodezoon.com:20217
-dbhost3=mongodb.wodezoon.com:20317
-dbhost4=mongodb.wodezoon.com:20417
-dbhost5=mongodb.wodezoon.com:20517
-dbhost6=mongodb.wodezoon.com:20617
-dbhost7=mongodb.wodezoon.com:20717
-dbhost8=mongodb.wodezoon.com:20817
-dbhost9=mongodb.wodezoon.com:20917
-dbhost10=mongodb.wodezoon.com:21017
-dbhost11=mongodb.wodezoon.com:21117
-dbhost12=mongodb.wodezoon.com:21217
-dbhost13=mongodb.wodezoon.com:21317
-dbhost14=mongodb.wodezoon.com:21417
-dbhost15=mongodb.wodezoon.com:21517
-dbhost16=mongodb.wodezoon.com:21617
 datapath=/home/ubuntu/datafile
 mongpath=/root/mongodb-linux-x86_64-ubuntu1404-3.0.3
 mmspath=/opt/mongodb/mms/conf/conf-mms.properties
@@ -35,14 +19,36 @@ fi
 if [ ! -d ${datapath}/bakup ]; then
         mkdir -p ${datapath}/bakup
 fi
+
+#init.js==>
+for ((i=0;i<3;i++));do
+        master=$[i*4+202]
+        slaver=$[i*4+203]
+        arbter=$[i*4+204]
+        echo "cfg={_id : \"testers1\",members:[{_id : 0, host : 'mongodbsharer${master}.wodezoon.com',priority:2},{_id : 1, host : 'mongodbsharer${slaver}.wodezoon.com',priority:1},{_id : 2, host : 'mongodbsharer${arbter}.wodezoon.com', arbiterOnly:true}]}"  > ${mongpath}/rs.initiate${master}.js
+        echo "rs.initiate(cfg)" >> ${mongpath}/rs.initiate${master}.js
+        echo "sh.addShard(\"testers$i/mongodbsharer${master}.wodezoon.com\")" >   ${mongpath}/sh.addShard$i.js
+done
+#init.js==>
+
 if [[ $(hostname) = mongodbrouter* ]]; then
-        ${mongpath}/bin/mongos -fork -logpath ${logpath}/root.log -configdb ${dbhost5},${dbhost9},${dbhost13}  -port 27017
+        ${mongpath}/bin/mongos -fork -logpath ${logpath}/root.log -configdb mongodbsharer205.wodezoon.com,mongodbsharer209.wodezoon.com,mongodbsharer213.wodezoon.com  -port 27017
+        if [[ $(hostname) = mongodbrouter214* ]]; then
+                for ((i=1;i<=3;i++)) ; do
+                        ${mongpath}/bin/mongo ${mongpath}/sh.addShard$i.js
+                done
+        fi
 fi
 if [[ $(hostname) = mongodbconfer* ]]; then
         ${mongpath}/bin/mongod -fork -configsvr -dbpath ${datapath} -logpath ${logpath}/conf.log -port 27017
+        echo "$(hostname)" > ${mongpath}/host
+        tmp=`tr -sc '[0-9]' ' ' < ${mongpath}/host`
+        typeset tmp1=$((tmp-3))
+        echo "${mongpath}/bin/mongo mongodbsharer${tmp1}.wodezoon.com --shell ${mongpath}/rs.initiate${tmp1}.js"
+        ${mongpath}/bin/mongo mongodbsharer${tmp1}.wodezoon.com --shell ${mongpath}/rs.initiate${tmp1}.js
 fi
 if [[ $(hostname) = mongodbsharer* ]]; then
-        ${mongpath}/bin/mongod -fork -dbpath ${datapath}/appdb -logpath ${logpath}/appdb/data.log -replSet ${name} -port 27017
+        ${mongpath}/bin/mongod -fork -dbpath ${datapath}/appdb -logpath ${logpath}/appdb/data.log -replSet ${name} -port 27017 --oplogSize 1024
 #        ${mongpath}/bin/mongod -fork -dbpath ${datapath}/bakup -logpath ${logpath}/bakup/data.log -replSet ${name} -port 27018
 #        if [[ $(hostname) = mongodbsharer201* ]]; then
 #                if [ ! -f ${mmspath} ]; then
@@ -72,14 +78,3 @@ fi
 #sed -i "/^mmsBaseUrl=/cmmsBaseUrl=http://${dbhost1}:20180"    /etc/mongodb-mms/monitoring-agent.config
 #/opt/mongodb-mms-automation/bin/mongodb-mms-automation-agent -f /etc/mongodb-mms/automation-agent.config
 #/opt/mongodb-mms-automation/bin/mongodb-mms-monitoring-agent -f /etc/mongodb-mms/monitoring-agent.config
-
-#init.js==>
-echo "rs.config({_id : "testers1",members:[{_id : 0, host : "${dbhost2}",priority:2},{_id : 1, host : "${dbhost3}",priority:1},{_id : 2, host : "${dbhost4}", arbiterOnly:true}]})"  > ${mongpath}/rs.config1.js
-echo "rs.config({_id : "testers2",members:[{_id : 0, host : "${dbhost6}",priority:2},{_id : 1, host : "${dbhost7}",priority:1},{_id : 2, host : "${dbhost8}", arbiterOnly:true}]})" > ${mongpath}/rs.config2.js
-echo "rs.config({_id : "testers3",members:[{_id : 0, host : "${dbhost10}",priority:2},{_id : 1, host : "${dbhost11}",priority:1},{_id : 2, host : "${dbhost12}", arbiterOnly:true}]})" > ${mongpath}/rs.config3.js
-#init.js==>
-
-#config router
-echo "sh.addShard("testers1/${dbhost2}")" >     ${mongpath}/sh.addShard1.js
-echo "sh.addShard("testers2/${dbhost6}")" >     ${mongpath}/sh.addShard2.js
-echo "sh.addShard("testers3/${dbhost10}")" >    ${mongpath}/sh.addShard3.js
