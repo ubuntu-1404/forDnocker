@@ -41,9 +41,19 @@ if [[ $(hostname) = mongodbrouter* ]]; then
         tmp1=$[delta+14]
         ${mongpath}/bin/mongos -fork -logpath ${logpath}/root.log -configdb mongodbconfer${conf1}.wodezoon.com:27017,mongodbconfer${conf2}.wodezoon.com:27017,mongodbconfer${conf3}.wodezoon.com:27017  -port 27017
         if [[ $(hostname) = mongodbrouter${tmp1}* ]]; then
+                echo "sh.enableSharding(\"Music\")"     >       ${mongpath}/shard.js
+                echo "sh.enableSharding(\"Log\")"       >>      ${mongpath}/shard.js
+                echo "sh.shardCollection(\"Music.Artist\",{\"baiduId\":1})"     >>      ${mongpath}/shard.js
+                echo "sh.shardCollection(\"Music.Song\",{\"songId\":1})"        >>      ${mongpath}/shard.js
+                echo "sh.shardCollection(\"Log.Music\",{\"date\":1})"           >>      ${mongpath}/shard.js
+                echo "sh.shardCollection(\"Log.Complete\",{\"id\":1})"          >>      ${mongpath}/shard.js
+                echo "sh.shardCollection(\"Music.fs.files\",{\"_id\":1})"       >>      ${mongpath}/shard.js
+                echo "sh.shardCollection(\"Music.fs.chunks\",{\"files_id\":1})" >>      ${mongpath}/shard.js
+                echo "exit" >>      ${mongpath}/shard.js
                 for ((i=1;i<=3;i++)) ; do
                         ${mongpath}/bin/mongo --shell ${mongpath}/sh.addShard$i.js
                 done
+                ${mongpath}/bin/mongo --shell ${mongpath}/shard.js
         fi
 fi
 if [[ $(hostname) = mongodbconfer* ]]; then
