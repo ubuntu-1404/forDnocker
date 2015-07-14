@@ -11,13 +11,14 @@
 
 ##############Parameters to be set up####################
 index=216
+delta=$[index-20]
 #containerID=724e1562a9af
 containerID=b4c88ba3e6f7
 sharedpath=/data/share${index}
 containerName=mongodbrouter${index}.wodezoon.com
 hostIp=192.168.102.249
-containerIP=192.168.100.33
-gatewayIP=192.168.100.1
+containerIP=192.168.102.${delta}
+gatewayIP=192.168.102.1
 pipath=/home/sam/pipework
 desbr=br0
 oldbr=eth0
