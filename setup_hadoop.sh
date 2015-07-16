@@ -29,7 +29,7 @@ if [ ! -f ${hadoopath}/setuped ]; then
         echo "<configuration>"                                                  >> ${hadoopath}/etc/hadoop/core-site.xml
         echo "        <property>"                                               >> ${hadoopath}/etc/hadoop/core-site.xml
         echo "                <name>fs.defaultFS</name>"                        >> ${hadoopath}/etc/hadoop/core-site.xml
-        echo "                <value>hdfs://${master}:40000</value>"            >> ${hadoopath}/etc/hadoop/core-site.xml
+        echo "                <value>hdfs://hadoopmaster.wodezoon.com:40000</value>"    >> ${hadoopath}/etc/hadoop/core-site.xml
         echo "        </property>"                                              >> ${hadoopath}/etc/hadoop/core-site.xml
         echo "</configuration>"                                                 >> ${hadoopath}/etc/hadoop/core-site.xml
         echo "<?xml version=\"1.0\"?>"                                          >  ${hadoopath}/etc/hadoop/yarn-site.xml
@@ -51,17 +51,10 @@ if [ ! -f ${hadoopath}/setuped ]; then
         fi
         echo "                <value>/home/ubuntu/hadoopdata</value>"           >> ${hadoopath}/etc/hadoop/hdfs-site.xml
         echo "        </property>"                                              >> ${hadoopath}/etc/hadoop/hdfs-site.xml
-        if [[ $(hostname) = hadoopm* ]]; then
-                echo "        <property>"                                               >> ${hadoopath}/etc/hadoop/hdfs-site.xml
-                echo "                <name>dfs.hosts</name>"                           >> ${hadoopath}/etc/hadoop/hdfs-site.xml
-                echo "                <value>${hadoopath}/etc/hadoop/slaves</value>"    >> ${hadoopath}/etc/hadoop/hdfs-site.xml
-                echo "        </property>"                                              >> ${hadoopath}/etc/hadoop/hdfs-site.xml
-        fi
         echo "</configuration>"                                                 >> ${hadoopath}/etc/hadoop/hdfs-site.xml
-        sed -i "/^export JAVA_HOME=/cexport JAVA_HOME=${jdk}"           ${hadoopath}/etc/hadoop/hadoop-env.sh
-        echo "${hadoopath}/bin/hdfs namenode -format ${deployedName}" >> ${hadoopath}/setuped
+        sed -i "/^export JAVA_HOME=/cexport JAVA_HOME=${jdk}"                   ${hadoopath}/etc/hadoop/hadoop-env.sh
+        echo "${hadoopath}/bin/hdfs namenode -format ${deployedName}"           >> ${hadoopath}/setuped
         ${hadoopath}/bin/hdfs namenode -format ${deployedName}
-        echo "hadoop is setuped $(date)" >> ${hadoopath}/setuped
 fi
 if [[ $(hostname) = hadoopm* ]]; then
         echo "${hadoopath}/sbin/hadoop-daemon.sh --config ${hadoopath}/etc/hadoop/ --script hdfs stop  namenode$(date)" >> ${hadoopath}/setuped
