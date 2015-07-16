@@ -1,39 +1,85 @@
-#-v===the volume which to be shared should exist two files.One is namenode ,another is datanode
+#!/bin/bash
+#############################################################
+#
+#hadoopmaster.wodezoon.com      =>      "localhostIPAddress"
+#
+#############################################################
+deployedName="ClusterDeployed"
+hadoopath="/home/ubuntu/hadoop-2.6.0"
+jdk="/home/ubuntu/jdk1.8.0_45/"
+hostIP=(`tr -sc '[0-9.]' ' ' < /home/ubuntu/hadoop/slaves`)
+index=0
 . /etc/profile
-HADOOP_HOME=/root/hadoop-2.6.0
 
-node(){
-	echo "namenodeService-Press 1;datanodeService-Press 2"
-	read status
-	case "$status" in
-		1)return 0;;
-		2)return 1;;
-		*);;
-	esac
-}
-#if node() $1 then
-#fi
+if [ ! -d ${hadoopath} ]; then
+        tar -zxvf hadoop-2.6.0.tar.gz -C /home/ubuntu/
+fi
 
-echo "select service to be run--1:format your cluster;2:run up your namenode and resourcemanager service;3:run up your datanode and noderesource service;4:update hosts"
-read tmp
-if [ ${tmp} -eq 1 ]; then
-${HADOOP_HOMEl}/bin/hdfs namenode -format cluster-name
+if [ ! -f ${hadoopath}/setuped ]; then
+        for i in "${hostIP[@]}"; do
+                index=$[index+1]
+                if [ ${index} -eq 1 ]; then
+                        echo "$i        hadoopmaster.wodezoon.com"              >> /etc/hosts
+                else
+                        echo "$i        hadoopslaver$[index-1].wodezoon.com"    >> /etc/hosts
+                fi
+        done
+        echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"                       >  ${hadoopath}/etc/hadoop/core-site.xml
+        echo "<?xml-stylesheet type=\"text/xsl\" href=\"configuration.xsl\"?>"  >> ${hadoopath}/etc/hadoop/core-site.xml
+        echo "<configuration>"                                                  >> ${hadoopath}/etc/hadoop/core-site.xml
+        echo "        <property>"                                               >> ${hadoopath}/etc/hadoop/core-site.xml
+        echo "                <name>fs.defaultFS</name>"                        >> ${hadoopath}/etc/hadoop/core-site.xml
+        echo "                <value>hdfs://${master}:40000</value>"            >> ${hadoopath}/etc/hadoop/core-site.xml
+        echo "        </property>"                                              >> ${hadoopath}/etc/hadoop/core-site.xml
+        echo "</configuration>"                                                 >> ${hadoopath}/etc/hadoop/core-site.xml
+        echo "<?xml version=\"1.0\"?>"                                          >  ${hadoopath}/etc/hadoop/yarn-site.xml
+        echo "<configuration>"                                                  >> ${hadoopath}/etc/hadoop/yarn-site.xml
+        echo "        <property>"                                               >> ${hadoopath}/etc/hadoop/yarn-site.xml
+        echo "                <name>yarn.resourcemanager.hostname</name>"       >> ${hadoopath}/etc/hadoop/yarn-site.xml
+        echo "                <value>hadoopmaster.wodezoon.com</value>"         >> ${hadoopath}/etc/hadoop/yarn-site.xml
+        echo "        </property>"                                              >> ${hadoopath}/etc/hadoop/yarn-site.xml
+        echo "</configuration>"                                                 >> ${hadoopath}/etc/hadoop/yarn-site.xml
+        echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"                       >  ${hadoopath}/etc/hadoop/hdfs-site.xml
+        echo "<?xml-stylesheet type=\"text/xsl\" href=\"configuration.xsl\"?>"  >> ${hadoopath}/etc/hadoop/hdfs-site.xml
+        echo "<configuration>"                                                  >> ${hadoopath}/etc/hadoop/hdfs-site.xml
+        echo "        <property>"                                               >> ${hadoopath}/etc/hadoop/hdfs-site.xml
+        if [[ $(hostname) = hadoopm* ]]; then
+                echo "                <name>dfs.namenode.name.dir</name>"       >> ${hadoopath}/etc/hadoop/hdfs-site.xml
+        fi
+        if [[ $(hostname) = hadoops* ]]; then
+                echo "                <name>dfs.datanode.data.dir</name>"       >> ${hadoopath}/etc/hadoop/hdfs-site.xml
+        fi
+        echo "                <value>/home/ubuntu/hadoopdata</value>"           >> ${hadoopath}/etc/hadoop/hdfs-site.xml
+        echo "        </property>"                                              >> ${hadoopath}/etc/hadoop/hdfs-site.xml
+        if [[ $(hostname) = hadoopm* ]]; then
+                echo "        <property>"                                               >> ${hadoopath}/etc/hadoop/hdfs-site.xml
+                echo "                <name>dfs.hosts</name>"                           >> ${hadoopath}/etc/hadoop/hdfs-site.xml
+                echo "                <value>${hadoopath}/etc/hadoop/slaves</value>"    >> ${hadoopath}/etc/hadoop/hdfs-site.xml
+                echo "        </property>"                                              >> ${hadoopath}/etc/hadoop/hdfs-site.xml
+        fi
+        echo "</configuration>"                                                 >> ${hadoopath}/etc/hadoop/hdfs-site.xml
+        sed -i "/^export JAVA_HOME=/cexport JAVA_HOME=${jdk}"           ${hadoopath}/etc/hadoop/hadoop-env.sh
+        echo "${hadoopath}/bin/hdfs namenode -format ${deployedName}" >> ${hadoopath}/setuped
+        ${hadoopath}/bin/hdfs namenode -format ${deployedName}
+        echo "hadoop is setuped $(date)" >> ${hadoopath}/setuped
 fi
-if [ ${tmp} -eq 2 ]; then
-${HADOOP_HOME}/sbin/hadoop-daemon.sh --config ${HADOOP_HOME}/etc/hadoop/ --script hdfs stop namenode
-${HADOOP_HOME}/sbin/hadoop-daemon.sh --config ${HADOOP_HOME}/etc/hadoop/ --script hdfs start namenode
-${HADOOP_HOME}/sbin/yarn-daemon.sh --config ${HADOOP_HOME}/etc/hadoop/ stop resourcemanager
-${HADOOP_HOME}/sbin/yarn-daemon.sh --config ${HADOOP_HOME}/etc/hadoop/ start resourcemanager
+if [[ $(hostname) = hadoopm* ]]; then
+        echo "${hadoopath}/sbin/hadoop-daemon.sh --config ${hadoopath}/etc/hadoop/ --script hdfs stop  namenode$(date)" >> ${hadoopath}/setuped
+        ${hadoopath}/sbin/hadoop-daemon.sh       --config ${hadoopath}/etc/hadoop/ --script hdfs stop  namenode
+        echo "${hadoopath}/sbin/hadoop-daemon.sh --config ${hadoopath}/etc/hadoop/ --script hdfs start namenode$(date)" >> ${hadoopath}/setuped
+        ${hadoopath}/sbin/hadoop-daemon.sh       --config ${hadoopath}/etc/hadoop/ --script hdfs start namenode
+        echo "${hadoopath}/sbin/yarn-daemon.sh   --config ${hadoopath}/etc/hadoop/ stop  resourcemanager$(date)" >> ${hadoopath}/setuped
+        ${hadoopath}/sbin/yarn-daemon.sh         --config ${hadoopath}/etc/hadoop/ stop  resourcemanager
+        echo "${hadoopath}/sbin/yarn-daemon.sh   --config ${hadoopath}/etc/hadoop/ start resourcemanager$(date)" >> ${hadoopath}/setuped
+        ${hadoopath}/sbin/yarn-daemon.sh         --config ${hadoopath}/etc/hadoop/ start resourcemanager
 fi
-if [ ${tmp} -eq 3 ]; then
-${HADOOP_HOME}/sbin/hadoop-daemon.sh --config ${HADOOP_HOME}/etc/hadoop/ --script hdfs stop datanode
-${HADOOP_HOME}/sbin/hadoop-daemon.sh --config ${HADOOP_HOME}/etc/hadoop/ --script hdfs start datanode
-${HADOOP_HOME}/sbin/yarn-daemon.sh --config ${HADOOP_HOME}/etc/hadoop/ stop nodemanager       
-${HADOOP_HOME}/sbin/yarn-daemon.sh --config ${HADOOP_HOME}/etc/hadoop/ start nodemanager
-fi
-if [ ${tmp} -eq 4 ]; then
-echo "192.168.100.91	namenode" >> /etc/hosts
-echo "192.168.100.92	datenode1" >> /etc/hosts
-echo "192.168.100.93	datanode2" >> /etc/hosts
-echo "192.168.100.94	datanode3" >> /etc/hosts
+if [[ $(hostname) = hadoops* ]]; then
+        echo "${hadoopath}/sbin/hadoop-daemon.sh --config ${hadoopath}/etc/hadoop/ --script hdfs stop  datanode$(date)" >> ${hadoopath}/setuped
+        ${hadoopath}/sbin/hadoop-daemon.sh       --config ${hadoopath}/etc/hadoop/ --script hdfs stop  datanode
+        echo "${hadoopath}/sbin/hadoop-daemon.sh --config ${hadoopath}/etc/hadoop/ --script hdfs start datanode$(date)" >> ${hadoopath}/setuped
+        ${hadoopath}/sbin/hadoop-daemon.sh       --config ${hadoopath}/etc/hadoop/ --script hdfs start datanode
+        echo "${hadoopath}/sbin/yarn-daemon.sh   --config ${hadoopath}/etc/hadoop/ stop  nodemanager$(date)" >> ${hadoopath}/setuped
+        ${hadoopath}/sbin/yarn-daemon.sh         --config ${hadoopath}/etc/hadoop/ stop  nodemanager
+        echo "${hadoopath}/sbin/yarn-daemon.sh   --config ${hadoopath}/etc/hadoop/ start nodemanager$(date)" >> ${hadoopath}/setuped
+        ${hadoopath}/sbin/yarn-daemon.sh         --config ${hadoopath}/etc/hadoop/ start nodemanager
 fi
