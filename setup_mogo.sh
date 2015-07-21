@@ -32,6 +32,7 @@ for ((i=1;i<=3;i++));do
         echo "rs.initiate(cfg)" >> ${mongpath}/rs.initiate${master}.js
         echo "sh.addShard(\"testers$i/mongodbsharer${master}.wodezoon.com\")" >>   ${mongpath}/sh.addShard.js
 done
+echo "quit()" >> ${mongpath}/sh.addShard.js
 #init.js==>
 
 if [[ $(hostname) = mongodbrouter* ]]; then
@@ -49,7 +50,7 @@ if [[ $(hostname) = mongodbrouter* ]]; then
                 echo "sh.shardCollection(\"Log.Complete\",{\"id\":1})"          >>      ${mongpath}/shard.js
                 echo "sh.shardCollection(\"Music.fs.files\",{\"_id\":1})"       >>      ${mongpath}/shard.js
                 echo "sh.shardCollection(\"Music.fs.chunks\",{\"files_id\":1})" >>      ${mongpath}/shard.js
-                echo "exit" >>      ${mongpath}/shard.js
+                echo "quit()" >>      ${mongpath}/shard.js
                 echo "${mongpath}/bin/mongo --shell ${mongpath}/sh.addShard.js"
                 ${mongpath}/bin/mongo --shell ${mongpath}/sh.addShard.js
                 echo "${mongpath}/bin/mongo --shell ${mongpath}/shard.js"
