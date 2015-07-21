@@ -23,14 +23,14 @@ fi
 echo "$(hostname)" > ${mongpath}/host
 tmp=`tr -sc '[0-9]' ' ' < ${mongpath}/host`
 #init.js==>
+echo "sh.status()" > ${mongpath}/sh.addShard.js
 for ((i=1;i<=3;i++));do
         master=$[i*4+delta-2]
         slaver=$[i*4+delta-1]
         arbter=$[i*4+delta]
         echo "cfg={_id : \"testers$i\",members:[{_id : 0, host : 'mongodbsharer${master}.wodezoon.com',priority:2},{_id : 1, host : 'mongodbsharer${slaver}.wodezoon.com',priority:1},{_id : 2, host : 'mongodbsharer${arbter}.wodezoon.com', arbiterOnly:true}]}"  > ${mongpath}/rs.initiate${master}.js
         echo "rs.initiate(cfg)" >> ${mongpath}/rs.initiate${master}.js
-        echo "sh.addShard(\"testers$i/mongodbsharer${master}.wodezoon.com\")" >   ${mongpath}/sh.addShard$i.js
-        echo "exit" >> ${mongpath}/sh.addShard$i.js
+        echo "sh.addShard(\"testers$i/mongodbsharer${master}.wodezoon.com\")" >>   ${mongpath}/sh.addShard.js
 done
 #init.js==>
 
@@ -51,8 +51,10 @@ if [[ $(hostname) = mongodbrouter* ]]; then
                 echo "sh.shardCollection(\"Music.fs.chunks\",{\"files_id\":1})" >>      ${mongpath}/shard.js
                 echo "exit" >>      ${mongpath}/shard.js
                 for ((i=1;i<=3;i++)) ; do
+                        echo "${mongpath}/bin/mongo --shell ${mongpath}/sh.addShard$i.js"
                         ${mongpath}/bin/mongo --shell ${mongpath}/sh.addShard$i.js
                 done
+                echo "${mongpath}/bin/mongo --shell ${mongpath}/shard.js"
                 ${mongpath}/bin/mongo --shell ${mongpath}/shard.js
         fi
 fi
