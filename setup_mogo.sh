@@ -50,10 +50,8 @@ if [[ $(hostname) = mongodbrouter* ]]; then
                 echo "sh.shardCollection(\"Music.fs.files\",{\"_id\":1})"       >>      ${mongpath}/shard.js
                 echo "sh.shardCollection(\"Music.fs.chunks\",{\"files_id\":1})" >>      ${mongpath}/shard.js
                 echo "exit" >>      ${mongpath}/shard.js
-                for ((i=1;i<=3;i++)) ; do
-                        echo "${mongpath}/bin/mongo --shell ${mongpath}/sh.addShard$i.js"
-                        ${mongpath}/bin/mongo --shell ${mongpath}/sh.addShard$i.js
-                done
+                echo "${mongpath}/bin/mongo --shell ${mongpath}/sh.addShard.js"
+                ${mongpath}/bin/mongo --shell ${mongpath}/sh.addShard.js
                 echo "${mongpath}/bin/mongo --shell ${mongpath}/shard.js"
                 ${mongpath}/bin/mongo --shell ${mongpath}/shard.js
         fi
