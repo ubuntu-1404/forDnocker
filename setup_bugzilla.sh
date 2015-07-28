@@ -1,3 +1,4 @@
+#!/bin/bash
 #pre-envirment
 #apt-get install language-pack-zh-hans
 apt-get install git nano

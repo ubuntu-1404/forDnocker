@@ -1,3 +1,4 @@
+#!/bin/bash
 hostMAC=fa:16:3e:97:2c:6f
 hostUname=#uname -r
 hostname=kaka

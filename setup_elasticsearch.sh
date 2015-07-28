@@ -1,3 +1,4 @@
+#!/bin/bash
 #-v===the volume which to be shared should exist two files.One is conf ,another is datafile
 . /etc/profile
 

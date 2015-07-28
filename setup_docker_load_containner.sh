@@ -1,3 +1,4 @@
+#!/bin/bash
 ######################TIPS###############################
 #setup_docker						#
 #wget -qO- https://get.docker.com/ | sh			#
@@ -10,10 +11,9 @@
 #########################################################
 
 ##############Parameters to be set up####################
-index=216
-delta=$[index-20]
-#containerID=724e1562a9af
-containerID=b4c88ba3e6f7
+index=1
+delta=1
+containerID=724e1562a9af
 sharedpath=/data/share${index}
 containerName=mongodbrouter${index}.wodezoon.com
 hostIP=192.168.102.249
