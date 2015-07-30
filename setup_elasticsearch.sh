@@ -20,6 +20,7 @@ echo "node.master: true" >> ${ESAdd}/config/elasticsearch.yml
 echo "node.data: true" >>  ${ESAdd}/config/elasticsearch.yml
 echo "http.max_content_length: 100mb" >>  ${ESAdd}/config/elasticsearch.yml
 echo "gateway.expected_nodes: 5" >>  ${ESAdd}/config/elasticsearch.yml
+echo "index.analysis.analyzer.ik.type : 'ik'" >>  ${ESAdd}/config/elasticsearch.yml
 #sed -i "/^# network.bind_host/cnetwork.bind_host: ${SelIP}" ${ESAdd}/config/elasticsearch.yml
 #sed -i "/^# network.publish_host/cnetwork.publish_host: ${SerIP}" ${ESAdd}/config/elasticsearch.yml
 sed -i "/^# network.host/cnetwork.host: ${SerIP}" ${ESAdd}/config/elasticsearch.yml
