@@ -51,9 +51,9 @@ fi
 for i in "${hostIP[@]}"; do
         index=$[index+1]
         if [ ${index} -eq 1 ]; then
-                echo "$i        hadoopmaster.wodezoon.com"		>	/etc/hosts
+                echo "$i        hadoopmaster.wodezoon.com"			>  /etc/hosts
         else
-                echo "$i        hadoopslaver$[index-1].wodezoon.com"	>>	/etc/hosts
+                echo "$i        hadoopslaver$[index-1].wodezoon.com"		>> /etc/hosts
         fi
 done
 if [[ $(hostname) = hadoopm* ]]; then

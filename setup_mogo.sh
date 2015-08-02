@@ -1,6 +1,8 @@
 #!/bin/bash
-shards=1
 delta=0
+shards=3
+datanode=3
+confnode=3
 logpath=/home/ubuntu/logs
 datapath=/home/ubuntu/datafile
 mongpath=/root/mongodb-linux-x86_64-ubuntu1404-3.0.3
@@ -26,39 +28,55 @@ echo "$(hostname)" > ${mongpath}/host
 tmp=`tr -sc '[0-9]' ' ' < ${mongpath}/host`
 #init.js==>
 echo "sh.status()" > ${mongpath}/sh.addShard.js
-echo "${mongpath}/bin/mongos -fork -logpath ${logpath}/root.log -configdb \\"	>	${mongpath}/setConf.sh
 for ((i=1;i<=${shards};i++));do
-        master=$[i*4+delta-3]
-        slaver=$[i*4+delta-2]
-        arbter=$[i*4+delta-1]
-	confer=$[i*4+delta]
-        echo "cfg={_id : \"testers$i\",members:[{_id : 0, host : 'mongodbsharer${master}.wodezoon.com',priority:2},{_id : 1, host : 'mongodbsharer${slaver}.wodezoon.com',priority:1},{_id : 2, host : 'mongodbsharer${arbter}.wodezoon.com', arbiterOnly:true}]}"  > ${mongpath}/rs.initiate${master}.js
-        echo "rs.initiate(cfg)" >> ${mongpath}/rs.initiate${master}.js
-        echo "sh.addShard(\"testers$i/mongodbsharer${master}.wodezoon.com\")"	>>	${mongpath}/sh.addShard.js
-	if [ $i -ne ${shards} ] ; then
-		echo "mongodbconfer${confer}.wodezoon.com:27017,\\"		>>	${mongpath}/setConf.sh
+	cfgtxt="cfg={_id : \"testers$i\",members:["
+	for ((j=1;j<=${datanode};j++)) ;do
+		if [ $[j/datanode] -eq 0 ] ; then
+			cfgtxt="${cfgtxt}{_id : $[j-1], host : 'mongodbsharer$[i*datanode+j+delta-datanode].wodezoon.com',priority:$[datanode-j]},"
+		fi
+		if [ $[j/datanode] -eq 1 ] ; then
+			if [ ${j} -eq 1 ] ; then
+				cfgtxt="${cfgtxt}{_id : $[j-1], host : 'mongodbsharer$[i*datanode+j+delta-datanode].wodezoon.com',priority:$[datanode-j]}]}"
+			else
+				cfgtxt="${cfgtxt}{_id : $[j-1], host : 'mongodbsharer$[i*datanode+j+delta-datanode].wodezoon.com',arbiterOnly:true}]}"
+			fi
+		fi
+	done
+	echo "${cfgtxt}"										>	${mongpath}/rs.initiate$[i*datanode+1+delta-datanode].js
+        echo "rs.initiate(cfg)"										>>	${mongpath}/rs.initiate$[i*datanode+1+delta-datanode].js
+        echo "quit()"											>>	${mongpath}/rs.initiate$[i*datanode+1+delta-datanode].js
+        echo "sh.addShard(\"testers$i/mongodbsharer$[i*datanode+1+delta-datanode].wodezoon.com\")"	>>	${mongpath}/sh.addShard.js
+done
+echo "quit()"												>>	${mongpath}/sh.addShard.js
+echo "${mongpath}/bin/mongos -fork -logpath ${logpath}/root.log -configdb \\"				>	${mongpath}/setConf.sh
+for ((m=1;m<=${confnode};m++));do
+	if [ $m -ne ${shards} ] ; then
+		echo "mongodbconfer$[shards*datanode+m+delta].wodezoon.com:27017,\\"			>>	${mongpath}/setConf.sh
 	else
-		echo "mongodbconfer${confer}.wodezoon.com:27017 \\"		>>	${mongpath}/setConf.sh
+		echo "mongodbconfer$[shards*datanode+m+delta].wodezoon.com:27017 \\"			>>	${mongpath}/setConf.sh
 	fi
 done
-echo "quit()"									>>	${mongpath}/sh.addShard.js
-echo "-port 27017"								>>	${mongpath}/setConf.sh
+echo "-port 27017"											>>	${mongpath}/setConf.sh
 chmod u+x ${mongpath}/setConf.sh
 #init.js==>
 
 if [[ $(hostname) = mongodbrouter* ]]; then
 	${mongpath}/setConf.sh
-        tmp1=$[delta+13]
+        tmp1=$[delta+shards*datanode+confnode+1]
         if [[ $(hostname) = mongodbrouter${tmp1}* ]]; then
-                echo "sh.enableSharding(\"Music\")"  				>       ${mongpath}/shard.js
-                echo "sh.enableSharding(\"Log\")"				>>      ${mongpath}/shard.js
-                echo "sh.shardCollection(\"Music.Artist\",{\"baiduId\":1})"     >>      ${mongpath}/shard.js
-                echo "sh.shardCollection(\"Music.Song\",{\"songId\":1})"        >>      ${mongpath}/shard.js
-                echo "sh.shardCollection(\"Log.Music\",{\"date\":1})"           >>      ${mongpath}/shard.js
-                echo "sh.shardCollection(\"Log.Complete\",{\"id\":1})"          >>      ${mongpath}/shard.js
-                echo "sh.shardCollection(\"Music.fs.files\",{\"_id\":1})"       >>      ${mongpath}/shard.js
-                echo "sh.shardCollection(\"Music.fs.chunks\",{\"files_id\":1})" >>      ${mongpath}/shard.js
-                echo "quit()"							>>      ${mongpath}/shard.js
+		for ((n=1;n<=${shards};n++)) ; do
+        		echo "${mongpath}/bin/mongo mongodbsharer$[n*datanode+1-datanode+delta].wodezoon.com --shell ${mongpath}/rs.initiate$[n*datanode+1-datanode+delta].js"
+        		${mongpath}/bin/mongo mongodbsharer$[n*datanode+1-datanode+delta].wodezoon.com --shell ${mongpath}/rs.initiate$[n*datanode+1-datanode+delta].js
+		done
+                echo "sh.enableSharding(\"Music\")"  							>       ${mongpath}/shard.js
+                echo "sh.enableSharding(\"Log\")"							>>      ${mongpath}/shard.js
+                echo "sh.shardCollection(\"Music.Artist\",{\"baiduId\":1})"     			>>      ${mongpath}/shard.js
+                echo "sh.shardCollection(\"Music.Song\",{\"songId\":1})"        			>>      ${mongpath}/shard.js
+                echo "sh.shardCollection(\"Log.Music\",{\"date\":1})"           			>>      ${mongpath}/shard.js
+                echo "sh.shardCollection(\"Log.Complete\",{\"id\":1})"          			>>      ${mongpath}/shard.js
+                echo "sh.shardCollection(\"Music.fs.files\",{\"_id\":1})"       			>>      ${mongpath}/shard.js
+                echo "sh.shardCollection(\"Music.fs.chunks\",{\"files_id\":1})" 			>>      ${mongpath}/shard.js
+                echo "quit()"										>>      ${mongpath}/shard.js
                 echo "${mongpath}/bin/mongo --shell ${mongpath}/sh.addShard.js"
                 ${mongpath}/bin/mongo --shell ${mongpath}/sh.addShard.js
                 echo "${mongpath}/bin/mongo --shell ${mongpath}/shard.js"
@@ -67,12 +85,9 @@ if [[ $(hostname) = mongodbrouter* ]]; then
 fi
 if [[ $(hostname) = mongodbconfer* ]]; then
         ${mongpath}/bin/mongod -fork -configsvr -dbpath ${datapath} -logpath ${logpath}/conf.log -port 27017
-        typeset tmp1=$((tmp-3))
-        echo "${mongpath}/bin/mongo mongodbsharer${tmp1}.wodezoon.com --shell ${mongpath}/rs.initiate${tmp1}.js"
-        ${mongpath}/bin/mongo mongodbsharer${tmp1}.wodezoon.com --shell ${mongpath}/rs.initiate${tmp1}.js
 fi
 if [[ $(hostname) = mongodbsharer* ]]; then
-        tmp1=$[(tmp-1-delta)/4+1]
+        tmp1=$[(tmp-1-delta)/${datanode}+1]
 	echo "${mongpath}/bin/mongod -fork -dbpath ${datapath}/appdb -logpath ${logpath}/appdb/data.log -replSet testers${tmp1} -port 27017 --oplogSize 1024"
 	${mongpath}/bin/mongod -fork -dbpath ${datapath}/appdb -logpath ${logpath}/appdb/data.log -replSet testers${tmp1} -port 27017 --oplogSize 1024
 #        ${mongpath}/bin/mongod -fork -dbpath ${datapath}/bakup -logpath ${logpath}/bakup/data.log -replSet ${name} -port 27018
