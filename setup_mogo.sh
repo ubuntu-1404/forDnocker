@@ -36,7 +36,7 @@ for ((i=1;i<=${shards};i++));do
 		fi
 		if [ $[j/datanode] -eq 1 ] ; then
 			if [ ${j} -eq 1 ] ; then
-				cfgtxt="${cfgtxt}{_id : $[j-1], host : 'mongodbsharer$[i*datanode+j+delta-datanode].wodezoon.com',priority:$[datanode-j]}]}"
+				cfgtxt="${cfgtxt}{_id : $[j-1], host : 'mongodbsharer$[i*datanode+j+delta-datanode].wodezoon.com',priority:1}]}"
 			else
 				cfgtxt="${cfgtxt}{_id : $[j-1], host : 'mongodbsharer$[i*datanode+j+delta-datanode].wodezoon.com',arbiterOnly:true}]}"
 			fi
