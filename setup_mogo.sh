@@ -50,7 +50,7 @@ done
 echo "quit()"												>>	${mongpath}/sh.addShard.js
 echo "${mongpath}/bin/mongos -fork -logpath ${logpath}/root.log -configdb \\"				>	${mongpath}/setConf.sh
 for ((m=1;m<=${confnode};m++));do
-	if [ $m -ne ${shards} ] ; then
+	if [ $m -ne ${confnode} ] ; then
 		echo "mongodbconfer$[shards*datanode+m+delta].wodezoon.com:27017,\\"			>>	${mongpath}/setConf.sh
 	else
 		echo "mongodbconfer$[shards*datanode+m+delta].wodezoon.com:27017 \\"			>>	${mongpath}/setConf.sh
