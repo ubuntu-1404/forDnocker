@@ -14,8 +14,7 @@ if [ ! -d ${dataAdd}/datafile ] ; then
         mkdir ${dataAdd}/datafile
 fi
 
-ifconfig eth1 | grep "inet addr" > /root/ifconfig
-localip=(`tr -sc '[0-9.]' ' ' < /root/ifconfig`)
+localip=(`ifconfig eth0 | grep "inet addr" | tr -sc '[0-9.]' ' '`)
 SerIP=${localip[0]}
 
 sed -i "/node.name:/,+0d" ${ESAdd}/config/elasticsearch.yml
