@@ -1,4 +1,7 @@
 # /bin/bash
+#open remoteCommand and config privillage
+#echo "EnableRemoteCommands=1" > /etc/zabbix/zabbix_agentd.conf
+#echo "zabbix ALL=NOPASSWD: ALL" > /etc/sudors
 #mail part
 function part_mail()
 {
