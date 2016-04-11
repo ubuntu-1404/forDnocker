@@ -27,6 +27,9 @@ isoPath=/home/sam/ubuntu-14.04.2-server-amd64.iso
 mount /mnt ${isoPath}
 mkdir /var/www/ubuntu
 cp -a /mnt/* /var/www/ubuntu/
+
+echo "d-i live-installer/net-image string http://${hostIP}/install/filesystem.squashfs" >       /var/www/ubuntu/install/preseed.cfg
+
 sed -i "Docu/cDocumentRoot /var/www/ubuntu" /etc/apache2/sites-available/000-default.conf
 
 filepath=/var/www/ubuntu/install/netboot/ubuntu-installer/amd64
