@@ -34,6 +34,7 @@ docker run -itd --name ${containerName} \
 -p ${hostIP}:${index}80:8080 \
 -p ${hostIP}:${index}81:8081 \
 -h ${containerName} \
+-e INIT=/home/ubuntu/test.sh \
 -v ${sharedpath}:/home/ubuntu \
 ${containerID} /usr/sbin/sshd -D
 fi
